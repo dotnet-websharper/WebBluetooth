@@ -11,19 +11,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WebSharper" Version="8.0.0.512-beta2" />    
-    <PackageReference Include="WebSharper.FSharp" Version="8.0.0.512-beta2" />
-    <PackageReference Include="WebSharper.MathJS" Version="8.0.0.512-beta2" />
-    <PackageReference Include="WebSharper.UI" Version="8.0.0.512-beta2" />
-    <PackageReference Include="WebSharper.AspNetCore" Version="8.0.0.512-beta2" />
+    <PackageReference Include="WebSharper" Version="8.0.0.540" />    
+    <PackageReference Include="WebSharper.FSharp" Version="8.0.0.540" />
+    <PackageReference Include="WebSharper.MathJS" Version="8.0.0.540" />
+    <PackageReference Include="WebSharper.UI" Version="8.0.0.540" />
+    <PackageReference Include="WebSharper.AspNetCore" Version="8.0.0.540" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WebSharper.WebBluetooth.Extensions\WebSharper.WebBluetooth.Extensions.fsproj" />
     <ProjectReference Include="..\WebSharper.WebBluetooth\WebSharper.WebBluetooth.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="9.0.300-beta.25079.4" />
+    <PackageReference Update="FSharp.Core" Version="9.0.300-beta.25124.4" />
   </ItemGroup>
 
 </Project>

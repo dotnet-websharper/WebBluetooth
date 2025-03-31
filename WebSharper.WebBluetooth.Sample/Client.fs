@@ -10,29 +10,30 @@ open WebSharper.WebBluetooth
 
 [<JavaScript>]
 module Client =
-    // The templates are loaded from the DOM, so you just can edit index.html
-    // and refresh your browser, no need to recompile unless you add or remove holes.
+    // Define the connection to the HTML template
     type IndexTemplate = Template<"wwwroot/index.html", ClientLoad.FromDocument>
 
+    // Variable to display the Bluetooth connection status
     let statusMessage = Var.Create "Click the button to connect Bluetooth."
 
-    let bluetooth = As<Navigator>(JS.Window.Navigator).Bluetooth
-
+    // Function to request a Bluetooth device connection
     let connectBluetooth () =
         promise {
             try
-                let! device = bluetooth.RequestDevice(RequestDeviceOptions(
+                // Request a device supporting the battery service
+                let! device = JS.Window.Navigator.Bluetooth.RequestDevice(RequestDeviceOptions(
                     AcceptAllDevices = true,
                     OptionalServices = [| "battery_service" |]
                 ))
 
+                // Ensure the device has a valid name
                 let deviceName = if isNull(device.Name) then "Unknown Device" else device.Name
 
                 statusMessage := $"Connected to: {deviceName}"
                 Console.Log("Device Info:", device)
 
-                // Connect to GATT server
-                let! server = device.Gatt.Connect() 
+                // Connect to the GATT server
+                let! server = device.Gatt.Connect()
                 Console.Log("Connected to GATT Server!")
 
                 // Get the battery service
@@ -45,15 +46,16 @@ module Client =
 
                 statusMessage := sprintf "%s - Battery: %d%%" statusMessage.Value batteryLevel
             with ex ->
+                // Handle errors in Bluetooth connection
                 Console.Error("Bluetooth Connection Failed:", ex.Message)
                 statusMessage := "Bluetooth connection failed!"
         }
 
     [<SPAEntryPoint>]
     let Main () =
-
+        // Initialize the UI template and bind Bluetooth connection status
         IndexTemplate.Main()
-            .connectBluetooth(fun _ -> 
+            .connectBluetooth(fun _ ->
                 async {
                     do! connectBluetooth().AsAsync()
                 }

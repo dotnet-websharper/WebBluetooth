@@ -5,13 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Main.fs" />
+    <Compile Include="Library.fs" />
     <None Include="wsconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="WebSharper" Version="8.0.0.540" />    
     <PackageReference Include="WebSharper.FSharp" Version="8.0.0.540" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebSharper.WebBluetooth\WebSharper.WebBluetooth.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

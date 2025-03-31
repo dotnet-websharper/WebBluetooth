@@ -7,6 +7,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.WebBluetooth", "
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.WebBluetooth.Sample", "WebSharper.WebBluetooth.Sample\WebSharper.WebBluetooth.Sample.fsproj", "{AA9F5E82-45CD-4D05-8279-20B87B82721F}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.WebBluetooth.Extensions", "WebSharper.WebBluetooth.Extensions\WebSharper.WebBluetooth.Extensions.fsproj", "{1065965D-189D-4095-BA8C-70426ED23700}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AA9F5E82-45CD-4D05-8279-20B87B82721F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA9F5E82-45CD-4D05-8279-20B87B82721F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA9F5E82-45CD-4D05-8279-20B87B82721F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1065965D-189D-4095-BA8C-70426ED23700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1065965D-189D-4095-BA8C-70426ED23700}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1065965D-189D-4095-BA8C-70426ED23700}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1065965D-189D-4095-BA8C-70426ED23700}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

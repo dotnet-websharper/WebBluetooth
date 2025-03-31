@@ -77,15 +77,12 @@ module Client =
     // Variable to display the Bluetooth connection status
     let statusMessage = Var.Create "Click the button to connect Bluetooth."
 
-    // Access the browser's Bluetooth API
-    let bluetooth = As<Navigator>(JS.Window.Navigator).Bluetooth
-
     // Function to request a Bluetooth device connection
     let connectBluetooth () =
         promise {
             try
                 // Request a device supporting the battery service
-                let! device = bluetooth.RequestDevice(RequestDeviceOptions(
+                let! device = JS.Window.Navigator.Bluetooth.RequestDevice(RequestDeviceOptions(
                     AcceptAllDevices = true,
                     OptionalServices = [| "battery_service" |]
                 ))

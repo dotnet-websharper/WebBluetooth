@@ -172,17 +172,10 @@ module Definition =
             "getDescriptor" => T<string>?name ^-> T<string> 
             "getService" => T<string>?name ^-> T<string> 
         ]
-    
-    let Navigator =
-        Class "Navigator"
-        |+> Instance [
-            "bluetooth" =? Bluetooth.Type
-        ]
 
     let Assembly =
         Assembly [
             Namespace "WebSharper.WebBluetooth" [
-                 Navigator
                  BluetoothUUID
                  Bluetooth
                  BluetoothCharacteristic
