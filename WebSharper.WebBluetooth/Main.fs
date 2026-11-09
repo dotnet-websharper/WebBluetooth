@@ -9,7 +9,7 @@ module Definition =
     let ManufacturerDataFilter =
         Pattern.Config "ManufacturerDataFilter" {
             Required = [
-                "companyIdentifier", T<int>
+                ("companyIdentifier", T<int>)
             ]
             Optional = [
                 "dataPrefix", T<ArrayBuffer>
@@ -20,7 +20,7 @@ module Definition =
     let ServiceDataFilter =
         Pattern.Config "ServiceDataFilter" {
             Required = [
-                "service", T<string>
+                ("service", T<string>)
             ]
             Optional = [
                 "dataPrefix", T<ArrayBuffer>
@@ -61,7 +61,16 @@ module Definition =
         |+> Instance [
             "id" =? T<string>
             "name" =? T<string>
-            "gatt" =? BluetoothRemoteGATTServer.Type 
+            "gatt" =? !?BluetoothRemoteGATTServer.Type
+
+            "watchAdvertisements" => !? T<obj> ^-> T<Promise<unit>>
+            "unwatchAdvertisements" => T<unit> ^-> T<unit>
+            "forget" => T<unit> ^-> T<Promise<unit>>
+
+            "ongattserverdisconnected" =@ T<unit> ^-> T<unit>
+            |> ObsoleteWithMessage "Use OnGattServerDisconnected instead"
+            "ongattserverdisconnected" =@ T<Dom.Event> ^-> T<unit>
+            |> WithSourceName "OnGattServerDisconnected"
         ]
     
     let BluetoothCharacteristicProperties =
@@ -111,6 +120,11 @@ module Definition =
         "writeValueWithoutResponse" => T<ArrayBuffer>?value ^-> T<Promise<unit>>
         "startNotifications" => T<unit> ^-> T<Promise<_>>[BluetoothRemoteGATTCharacteristic]
         "stopNotifications" => T<unit> ^-> T<Promise<unit>>
+
+        "oncharacteristicvaluechanged" =@ T<unit> ^-> T<unit>
+        |> ObsoleteWithMessage "Use OnCharacteristicValueChanged instead"
+        "oncharacteristicvaluechanged" =@ T<Dom.Event> ^-> T<unit>
+        |> WithSourceName "OnCharacteristicValueChanged"
     ]
     |> ignore
 
@@ -123,6 +137,8 @@ module Definition =
 
         "getCharacteristic" => T<string>?characteristic ^-> T<Promise<_>>[BluetoothRemoteGATTCharacteristic]
         "getCharacteristics" => T<string>?characteristic ^-> T<Promise<_>>[!|BluetoothRemoteGATTCharacteristic]
+        "getIncludedService" => T<string> ^-> T<Promise<_>>[BluetoothRemoteGATTService]
+        "getIncludedServices" => !? T<string> ^-> T<Promise<_>>[!| BluetoothRemoteGATTService]
     ]
     |> ignore
     
@@ -134,27 +150,51 @@ module Definition =
         "connect" => T<unit> ^-> T<Promise<_>>[BluetoothRemoteGATTServer]
         "disconnect" => T<unit> ^-> T<unit>
         "getPrimaryService" => T<string>?bluetoothServiceUUID ^-> T<Promise<_>>[BluetoothRemoteGATTService]
-        "getPrimaryServices" => T<string>?bluetoothServiceUUID ^-> T<Promise<_>>[!|BluetoothRemoteGATTService]
+        "getPrimaryServices" => !? T<string>?bluetoothServiceUUID ^-> T<Promise<_>>[!|BluetoothRemoteGATTService]
     ] |> ignore
         
-    let BluetoothService =
-        Class "BluetoothService"
-        |+> Instance [
-            "uuid" =? T<string>
-            "getCharacteristic" => T<string> ^-> T<Promise<obj>> 
+    let BluetoothAdvertisingEventInit =
+        Pattern.Config "BluetoothAdvertisingEventInit" {
+            Required = [
+                ("device", BluetoothDevice.Type)
+            ]
+            Optional = [
+                "uuids", !| T<string>
+                "name", T<string>
+                "appearance", T<int>
+                "txPower", T<int>
+                "rssi", T<int>
+                "manufacturerData", T<obj>
+                "serviceData", T<obj>
+            ]
+        }
+
+    let BluetoothAdvertisingEvent =
+        Class "BluetoothAdvertisingEvent"
+        |=> Inherits T<Dom.Event>
+        |+> Static [
+            Constructor (T<string>?``type`` * !?BluetoothAdvertisingEventInit?init)
         ]
-    
-    let BluetoothCharacteristic =
-        Class "BluetoothCharacteristic"
         |+> Instance [
-            "uuid" =? T<string>
-            "properties" =? BluetoothCharacteristicProperties.Type
-            "readValue" => T<unit> ^-> T<Promise<DataView>>
-            "writeValue" => T<ArrayBuffer>?value ^-> T<Promise<unit>>
-            "startNotifications" => T<unit> ^-> T<Promise<unit>>
-            "stopNotifications" => T<unit> ^-> T<Promise<unit>>
+            "device" =? BluetoothDevice.Type
+            "uuids" =? !| T<string>
+            "name" =? T<string>
+            "appearance" =? T<int>
+            "txPower" =? T<int>
+            "rssi" =? T<int>
+            "manufacturerData" =? T<obj>
+            "serviceData" =? T<obj>
         ]
-    
+
+    BluetoothDevice
+    |+> Instance [
+        "onadvertisementreceived" =@ T<unit> ^-> T<unit>
+        |> ObsoleteWithMessage "Use OnAdvertisementReceived instead"
+        "onadvertisementreceived" =@ BluetoothAdvertisingEvent ^-> T<unit>
+        |> WithSourceName "OnAdvertisementReceived"
+    ]
+    |> ignore
+
     let Bluetooth =
         Class "Bluetooth"
         |=> Inherits T<Dom.EventTarget>
@@ -178,7 +218,8 @@ module Definition =
             Namespace "WebSharper.WebBluetooth" [
                  BluetoothUUID
                  Bluetooth
-                 BluetoothCharacteristic
+                 BluetoothAdvertisingEvent
+                 BluetoothAdvertisingEventInit
                  BluetoothRemoteGATTDescriptor
                  BluetoothRemoteGATTCharacteristic
                  BluetoothRemoteGATTService

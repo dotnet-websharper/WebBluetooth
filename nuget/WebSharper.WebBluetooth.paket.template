@@ -1,0 +1,22 @@
+type file
+id WebSharper.WebBluetooth
+authors
+    IntelliFactory
+owners
+    IntelliFactory
+repositoryType git
+repositoryUrl https://github.com/dotnet-websharper/WebBluetooth/
+licenseUrl https://github.com/dotnet-websharper/WebBluetooth/blob/main/LICENSE.md
+iconUrl https://github.com/dotnet-websharper/core/raw/websharper50/tools/WebSharper.png
+projectUrl https://github.com/dotnet-websharper/WebBluetooth
+description
+    WebSharper bindings for the Web Bluetooth API
+tags
+    Web JavaScript F# C#
+files
+    ../WebSharper.WebBluetooth.Extensions/bin/Release/netstandard2.0/WebSharper.WebBluetooth.Extensions.dll ==> lib/netstandard2.0
+    ../WebSharper.WebBluetooth.Extensions/bin/Release/netstandard2.0/WebSharper.WebBluetooth.Extensions.xml ==> lib/netstandard2.0
+    ../WebSharper.WebBluetooth/bin/Release/netstandard2.0/WebSharper.WebBluetooth.dll ==> lib/netstandard2.0
+    ../WebSharper.WebBluetooth/bin/Release/netstandard2.0/WebSharper.WebBluetooth.xml ==> lib/netstandard2.0
+dependencies
+        WebSharper ~> LOCKEDVERSION:[3]

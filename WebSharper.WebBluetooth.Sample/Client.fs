@@ -10,57 +10,104 @@ open WebSharper.WebBluetooth
 
 [<JavaScript>]
 module Client =
-    // Define the connection to the HTML template
+    // The template is loaded from the DOM, so editing index.html and refreshing
+    // the browser is enough; a rebuild is only needed when holes change.
     type IndexTemplate = Template<"wwwroot/index.html", ClientLoad.FromDocument>
 
-    // Variable to display the Bluetooth connection status
-    let statusMessage = Var.Create "Click the button to connect Bluetooth."
+    let status = Var.Create "Ready."
+    let deviceName = Var.Create "No device connected"
+    let serviceCount = Var.Create "0"
+    let batteryLevel = Var.Create "—"
+    let logMessage = Var.Create ""
 
-    // Function to request a Bluetooth device connection
-    let connectBluetooth () =
+    let appendLog (line: string) =
+        logMessage :=
+            if logMessage.Value = "" then line
+            else logMessage.Value + "\n" + line
+
+    // navigator.bluetooth is undefined in browsers without Web Bluetooth,
+    // including most headless / automated Chrome instances. Probe it through a
+    // dynamic property read so the check is safe even when it is missing.
+    let bluetoothObject: obj = JS.Window.Navigator?bluetooth
+    let bluetoothAvailable =
+        not (isNull bluetoothObject) && not (bluetoothObject ===. JS.Undefined)
+
+    let capabilities =
+        if bluetoothAvailable then
+            "Web Bluetooth is available. Pick a BLE device that exposes the standard battery service."
+        else
+            "Web Bluetooth is not available in this browser. Use Chrome, Edge or Opera over HTTPS (or localhost); headless and automated browsers usually do not expose it."
+
+    let bluetooth = As<Bluetooth> bluetoothObject
+
+    // Request a device, connect to its GATT server, list its primary services,
+    // read the battery level characteristic and subscribe to notifications.
+    let connect () =
         promise {
             try
-                // Request a device supporting the battery service
-                let! device = JS.Window.Navigator.Bluetooth.RequestDevice(RequestDeviceOptions(
-                    AcceptAllDevices = true,
-                    OptionalServices = [| "battery_service" |]
-                ))
+                status := "Requesting a Bluetooth device..."
+                appendLog "Requesting a device exposing the battery service..."
+                let! device =
+                    bluetooth.RequestDevice(
+                        RequestDeviceOptions(
+                            Filters = [| BluetoothDeviceFilter(Services = [| "battery_service" |]) |]))
 
-                // Ensure the device has a valid name
-                let deviceName = if isNull(device.Name) then "Unknown Device" else device.Name
+                let name = if isNull device.Name then "(unnamed device)" else device.Name
+                deviceName := name
+                appendLog (sprintf "Selected device: %s" name)
 
-                statusMessage := $"Connected to: {deviceName}"
-                Console.Log("Device Info:", device)
+                device.OnGattServerDisconnected <- fun _ ->
+                    status := "Device disconnected."
+                    appendLog "Received gattserverdisconnected."
 
-                // Connect to the GATT server
-                let! server = device.Gatt.Connect()
-                Console.Log("Connected to GATT Server!")
+                let gatt = device.Gatt
+                if Optional.isUndefined gatt || isNull (box gatt) then
+                    status := "This device does not expose a GATT server."
+                    appendLog "device.gatt is undefined."
+                else
+                    status := "Connecting to the GATT server..."
+                    let! server = gatt.Value.Connect()
+                    appendLog "Connected to the GATT server."
 
-                // Get the battery service
-                let! service = server.GetPrimaryService("battery_service")
-                let! characteristic = service.GetCharacteristic("battery_level")
+                    let! services = server.GetPrimaryServices()
+                    serviceCount := string services.Length
+                    appendLog (sprintf "Found %d primary service(s)." services.Length)
 
-                // Read battery level
-                let! value = characteristic.ReadValue() |> Promise.AsAsync
-                let batteryLevel = value.GetUint8(0)
+                    let! service = server.GetPrimaryService("battery_service")
+                    let! characteristic = service.GetCharacteristic("battery_level")
+                    let! value = characteristic.ReadValue()
+                    let level = value.GetUint8(0)
+                    batteryLevel := sprintf "%d%%" level
+                    appendLog (sprintf "Read battery_level = %d%%." level)
 
-                statusMessage := sprintf "%s - Battery: %d%%" statusMessage.Value batteryLevel
+                    characteristic.OnCharacteristicValueChanged <- fun _ ->
+                        let updated = characteristic.Value
+                        if not (isNull (box updated)) then
+                            let level = updated.GetUint8(0)
+                            batteryLevel := sprintf "%d%%" level
+                            appendLog (sprintf "Notification: battery_level = %d%%." level)
+
+                    let! _ = characteristic.StartNotifications()
+                    appendLog "Subscribed to battery_level notifications."
+                    status := "Connected — reading the battery level and receiving notifications."
             with ex ->
-                // Handle errors in Bluetooth connection
-                Console.Error("Bluetooth Connection Failed:", ex.Message)
-                statusMessage := "Bluetooth connection failed!"
+                Console.Error("Bluetooth operation failed:", ex.Message)
+                status := "Bluetooth operation failed: " + ex.Message
+                appendLog ("Error: " + ex.Message)
         }
 
     [<SPAEntryPoint>]
     let Main () =
-        // Initialize the UI template and bind Bluetooth connection status
+        if not bluetoothAvailable then
+            status := "Web Bluetooth is not available in this browser."
+
         IndexTemplate.Main()
-            .connectBluetooth(fun _ ->
-                async {
-                    do! connectBluetooth().AsAsync()
-                }
-                |> Async.Start
-            )
-            .status(statusMessage.V)
+            .connect(fun _ -> connect() |> ignore)
+            .status(status.V)
+            .device(deviceName.V)
+            .serviceCount(serviceCount.V)
+            .battery(batteryLevel.V)
+            .log(logMessage.V)
+            .capabilities(capabilities)
             .Doc()
         |> Doc.RunById "main"

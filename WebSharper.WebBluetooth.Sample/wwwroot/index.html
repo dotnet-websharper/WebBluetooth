@@ -1,10 +1,12 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Web Bluetooth API Example</title>
+    <title>Web Bluetooth API Demo</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%234f46e5'/%3E%3Cpath d='M8 2.5l3 2.5-3 2.5V2.5zm0 11l3-2.5-3-2.5v5z' fill='white'/%3E%3C/svg%3E" />
     <link rel="stylesheet" type="text/css" href="Content/WebSharper.WebBluetooth.Sample.css" />
+    <link rel="stylesheet" type="text/css" href="site.css" />
     <style>
         /* Don't show the not-yet-loaded templates */
         [ws-template], [ws-children-template] { display: none; }
@@ -12,11 +14,50 @@
     <script type="module" src="Content/WebSharper.WebBluetooth.Sample.head.js"></script>
 </head>
 <body>
-    <h1>Web Bluetooth API Demo</h1>
-    <div id="main" ws-children-template="Main">
-        <button ws-onclick="connectBluetooth">Connect to Bluetooth Device</button>
-        <p id="status">${status}</p>
-    </div>
+    <main class="page">
+        <header class="hero">
+            <h1>Web Bluetooth API Demo</h1>
+            <p class="lede">
+                Request a BLE device, connect to its GATT server, list its primary services,
+                read the battery level and subscribe to notifications with the
+                <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API" target="_blank" rel="noreferrer">Web Bluetooth API</a>.
+                The page must run in a secure context (HTTPS or localhost) and request a device from a user gesture.
+            </p>
+        </header>
+
+        <div id="main" ws-children-template="Main">
+            <section class="card">
+                <h2>Connect</h2>
+                <p class="hint">
+                    Calls <code>navigator.bluetooth.requestDevice()</code> with a filter for the
+                    standard <code>battery_service</code>.
+                </p>
+                <div class="actions">
+                    <button class="btn btn-primary" ws-onclick="connect">Connect to a device</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Device</h2>
+                <dl class="facts">
+                    <dt>Name</dt>
+                    <dd>${device}</dd>
+                    <dt>Primary services</dt>
+                    <dd>${serviceCount}</dd>
+                    <dt>Battery level</dt>
+                    <dd>${battery}</dd>
+                </dl>
+            </section>
+
+            <p class="status" role="status">${status}</p>
+            <p class="capabilities">${capabilities}</p>
+
+            <section class="card">
+                <h2>Log</h2>
+                <pre class="log">${log}</pre>
+            </section>
+        </div>
+    </main>
     <script type="module" src="Content/WebSharper.WebBluetooth.Sample.min.js"></script>
 </body>
 </html>
