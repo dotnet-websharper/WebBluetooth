@@ -101,7 +101,7 @@ module Client =
         if not bluetoothAvailable then
             status := "Web Bluetooth is not available in this browser."
 
-        IndexTemplate.Main()
+        IndexTemplate()
             .connect(fun _ -> connect() |> ignore)
             .status(status.V)
             .device(deviceName.V)
@@ -109,5 +109,4 @@ module Client =
             .battery(batteryLevel.V)
             .log(logMessage.V)
             .capabilities(capabilities)
-            .Doc()
-        |> Doc.RunById "main"
+            .Bind()
